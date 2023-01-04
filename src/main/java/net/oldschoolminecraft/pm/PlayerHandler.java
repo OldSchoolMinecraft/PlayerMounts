@@ -15,7 +15,7 @@ public class PlayerHandler extends PlayerListener
         final File playerFile = Util.getPluginFile(event.getPlayer().getName().toLowerCase() + ".pm.conf");
         final Entity ent = event.getRightClicked();
         if (ent != null && (event.getPlayer().hasPermission("pm.mount") || event.getPlayer().isOp())) {
-            if (ent instanceof Wolf && ((Wolf)ent).isTamed())
+            if (ent instanceof Wolf)
                 return;
             if (ent instanceof Vehicle)
                 return;
