@@ -1,0 +1,11 @@
+name: PlayerMounts
+version: 1.0
+author: moderator_man
+main: net.oldschoolminecraft.pm.PlayerMounts
+commands:
+  nomounts:
+    description: Disable mounts
+    permission: pm.mount
+  yesmounts:
+    description: Enable mounts
+    permission: pm.mount
