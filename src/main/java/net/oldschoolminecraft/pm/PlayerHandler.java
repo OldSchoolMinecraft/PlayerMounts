@@ -35,6 +35,10 @@ public class PlayerHandler extends PlayerListener
                 return;
             }
             if (ent.getPassenger() != null) {
+                if (ent.getPassenger().equals(event.getPlayer())) {
+                    ent.eject();
+                    return;
+                }
                 Entity passent = ent.getPassenger();
                 while (passent.getPassenger() != null){
                     passent = passent.getPassenger();
