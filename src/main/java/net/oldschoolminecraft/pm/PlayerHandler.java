@@ -11,43 +11,57 @@ import java.io.File;
 public class PlayerHandler extends PlayerListener
 {
     @EventHandler
-    public void onPlayerInteractEntity(final PlayerInteractEntityEvent event) {
+    public void onPlayerInteractEntity(final PlayerInteractEntityEvent event)
+    {
         final File playerFile = Util.getPluginFile(event.getPlayer().getName().toLowerCase() + ".pm.conf");
         final Entity ent = event.getRightClicked();
-        if (ent != null && (event.getPlayer().hasPermission("pm.mount") || event.getPlayer().isOp())) {
-            if (ent instanceof Wolf)
-                return;
-            if (ent instanceof Vehicle)
-                return;
-            if (ent instanceof Painting)
-                return;
-            if (ent instanceof FallingSand)
-                return;
-            if (ent instanceof Player) {
+        if (ent != null && (event.getPlayer().hasPermission("pm.mount") || event.getPlayer().isOp()))
+        {
+            if (ent instanceof Wolf) return;
+            if (ent instanceof Vehicle) return;
+            if (ent instanceof Painting) return;
+            if (ent instanceof FallingSand) return;
+            if (ent instanceof Player)
+            {
                 final Player targetPlayer = (Player)ent;
                 final File targetFile = Util.getPluginFile(targetPlayer.getName().toLowerCase() + ".pm.conf");
-                if (targetFile.exists()) {
+                if (targetFile.exists())
+                {
                     event.getPlayer().sendMessage(ChatColor.RED + "This player has mounts disabled!");
                     return;
                 }
             }
-            if (playerFile.exists()) {
+
+            if (playerFile.exists()) return;
+
+            if (event.getPlayer().getPassenger() != null && event.getPlayer().getPassenger().equals(ent))
+            {
+                event.getPlayer().sendMessage(ChatColor.RED + "You cannot mount your passenger!");
                 return;
             }
-            if (ent.getPassenger() != null) {
-                if (ent.getPassenger().equals(event.getPlayer())) {
+
+            if (ent.getPassenger() != null)
+            {
+                if (ent.getPassenger().equals(event.getPlayer()))
+                {
                     ent.eject();
                     return;
                 }
-                Entity passent = ent.getPassenger();
-                while (passent.getPassenger() != null){
-                    passent = passent.getPassenger();
+
+                Entity currentPassenger = ent.getPassenger();
+
+                if (currentPassenger instanceof Player)
+                {
+                    Player currentPassengerPlayer = (Player) currentPassenger;
+                    if (currentPassengerPlayer.getPassenger() != null && currentPassengerPlayer.getPassenger().equals(event.getPlayer()))
+                    {
+                        event.getPlayer().sendMessage(ChatColor.RED + "You cannot mount your passenger due to circular relationships and recursion.");
+                        return;
+                    }
                 }
-                passent.setPassenger(event.getPlayer());
-            }
-            else {
-                ent.setPassenger(event.getPlayer());
-            }
+
+                currentPassenger.setPassenger(event.getPlayer());
+            } else ent.setPassenger(event.getPlayer());
         }
     }
 }
