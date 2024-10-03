@@ -13,17 +13,19 @@ public class PlayerHandler extends PlayerListener
     @EventHandler
     public void onPlayerInteractEntity(final PlayerInteractEntityEvent event)
     {
-        final File playerFile = Util.getPluginFile(event.getPlayer().getName().toLowerCase() + ".pm.conf");
-        final Entity ent = event.getRightClicked();
-        if (ent != null && (event.getPlayer().hasPermission("pm.mount") || event.getPlayer().isOp()))
+        final Player player = event.getPlayer();
+        final File playerFile = Util.getPluginFile(player.getName().toLowerCase() + ".pm.conf");
+        final Entity clickedEntity = event.getRightClicked();
+
+        if (clickedEntity != null && (event.getPlayer().hasPermission("pm.mount") || event.getPlayer().isOp()))
         {
-            if (ent instanceof Wolf) return;
-            if (ent instanceof Vehicle) return;
-            if (ent instanceof Painting) return;
-            if (ent instanceof FallingSand) return;
-            if (ent instanceof Player)
+            if (clickedEntity instanceof Wolf) return;
+            if (clickedEntity instanceof Vehicle) return;
+            if (clickedEntity instanceof Painting) return;
+            if (clickedEntity instanceof FallingSand) return;
+            if (clickedEntity instanceof Player)
             {
-                final Player targetPlayer = (Player)ent;
+                final Player targetPlayer = (Player) clickedEntity;
                 final File targetFile = Util.getPluginFile(targetPlayer.getName().toLowerCase() + ".pm.conf");
                 if (targetFile.exists())
                 {
@@ -34,21 +36,21 @@ public class PlayerHandler extends PlayerListener
 
             if (playerFile.exists()) return;
 
-            if (event.getPlayer().getPassenger() != null && event.getPlayer().getPassenger().equals(ent))
+            if (event.getPlayer().getPassenger() != null && event.getPlayer().getPassenger().equals(clickedEntity))
             {
                 event.getPlayer().sendMessage(ChatColor.RED + "You cannot mount your passenger!");
                 return;
             }
 
-            if (ent.getPassenger() != null)
+            if (clickedEntity.getPassenger() != null)
             {
-                if (ent.getPassenger().equals(event.getPlayer()))
+                if (clickedEntity.getPassenger().equals(event.getPlayer()))
                 {
-                    ent.eject();
+                    clickedEntity.eject();
                     return;
                 }
 
-                Entity currentPassenger = ent.getPassenger();
+                Entity currentPassenger = clickedEntity.getPassenger();
 
                 if (currentPassenger instanceof Player)
                 {
@@ -60,8 +62,31 @@ public class PlayerHandler extends PlayerListener
                     }
                 }
 
-                currentPassenger.setPassenger(event.getPlayer());
-            } else ent.setPassenger(event.getPlayer());
+                Entity topEntity = getTopMostPassenger(currentPassenger);
+
+                topEntity.setPassenger(event.getPlayer());
+            } else clickedEntity.setPassenger(event.getPlayer());
         }
+    }
+
+    private Entity getTopMostPassenger(Entity entity)
+    {
+        Entity current = entity;
+        while (current.getPassenger() != null)
+        {
+            current = current.getPassenger();
+        }
+        return current;
+    }
+
+    private boolean isCircularMount(Player player, Entity topEntity)
+    {
+        Entity current = topEntity;
+        while (current != null)
+        {
+            if (current.equals(player)) return true;
+            current = current.getPassenger();
+        }
+        return false;
     }
 }
